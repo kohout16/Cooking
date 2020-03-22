@@ -10,6 +10,7 @@ vareni=Tk()
 vareni.option_add('*Font', 'Arial 10')
 
 PocetRadku = 1
+Init_done= 0
 
 #plonkova definice
 Item = []
@@ -103,6 +104,8 @@ def Inicializace():
         #Unit[i].bind("<Enter>", lambda udalost: Save(udalost,Var[i].get(),Value[i].get()))
         Save(Var[i].get(),Value[i].get())
 
+    #inicializace dokoncena
+    Init_done = 1
 #prepocet stravnici
 def PrepocetOsoby(udalost,Pocet1,Pocet1_new,Value):
 
@@ -128,7 +131,7 @@ def PrepocetOsoby(udalost,Pocet1,Pocet1_new,Value):
         #hodnota1
         Value_new[i]=Entry()
         Value_new[i].grid(row=3+i,column=5)
-        Value_new[i].insert(END,int(Value[i].get())*Z)
+        Value_new[i].insert(END,float(Real_Value[i].get())*Z)
         #unit1
         MyItems=Read() #nacte hodnoty ze souboru
         Var_new[i] = StringVar(vareni)
@@ -137,19 +140,15 @@ def PrepocetOsoby(udalost,Pocet1,Pocet1_new,Value):
         Unit_new[i].grid(row=3+i,column=6)
 
 #prevod jednotky
-def Prevod(Unit,Val):
-    #return (Value * ureg.sys.imperial.pint).to('liter')
-    #return (Value * ureg.ml).to('liter')
+def Prevod(NewUnit,Var):
     #cyklus na radky
     for i in range(PocetRadku):
-        print('prevadim z:')
-        print(Unit_before[i])
-        print('na:')
-        a=int(Unit_before[i].magnitude)
-        b=Unit_before[i].units
-        c = (a*b).to(Unit)
-        print(round(c))
-        d=round(c.magnitude)
+        print('converting...')
+        print(Var)
+        c= Var.to(NewUnit)
+        print('A conversion complete')
+        print(c)
+        d=round(c.magnitude,5)
         print(d)
         Value[i].delete(0,END)
         Value[i].insert(END,d)
@@ -159,18 +158,17 @@ def Save(Unit,Value):
     #cyklus na radky
     for i in range(PocetRadku):
         print('Ukladam...')
-        Unit_before[i] = Value * ureg(Unit)
+        Unit_before[i] = float(Value) * ureg(Unit)
         print(Unit_before[i])
 
 #zmenila se jednotka
 def ZmenaJednotka(*args):
-    print ("jednotka se zmenila!")
-    Prevod(Var[i].get(),Value[i].get())
+    print('probiha zmena jednotky')
+    Prevod(Var[i].get(),Unit_before[i])
 
 #zmenila se hodnota
 def ZmenaHodnota(*args):
-    print ("hodnota se zmenila!")
-    Save(Var[i].get(),Value[i].get())
+    Save(Var[i].get(),Real_Value[i].get())
 
 # ------------------------------------------------------------
 # -----------------Hlavni smycka -----------------------------
