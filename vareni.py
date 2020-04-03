@@ -7,9 +7,9 @@ from pint import UnitRegistry
 ureg = UnitRegistry()
 
 vareni=Tk()
-vareni.option_add('*Font', 'Arial 10')
+vareni.option_add('*Font', 'Verdana 10')
 
-PocetRadku = 1
+PocetRadku = 10
 Init_done= 0
 
 #plonkova definice
@@ -85,24 +85,22 @@ def Inicializace():
     for i in range(PocetRadku):
         #surovina1
         Item[i]=Entry()
-        Item[i].insert(END,'Mleko')
+        Item[i].insert(END,'Surovina')
         Item[i].grid(row=3+i,column=0)
         #hodnota1
-        Real_Value[i]=StringVar()
-        Real_Value[i].trace("w",ZmenaHodnota)
+        Real_Value[i]=StringVar(vareni,name='Real_Value' + str(i))
+        Real_Value[i].trace_add("write",Save)
         Value[i]=Entry(vareni,textvariable=Real_Value[i])
         Value[i].insert(END,0)
         Value[i].grid(row=3+i,column=1)
-
         #unit1
         MyItems=Read() #nacte hodnoty ze souboru
-        Var[i] = StringVar(vareni)
+        Var[i] = StringVar(vareni,name='Var' + str(i))
         Var[i].set(MyItems[0]) # defaultni hodnota
-        Var[i].trace("w", ZmenaJednotka)
+        Var[i].trace("w", Prevod)
         Unit[i]=OptionMenu(vareni, Var[i], *MyItems)
         Unit[i].grid(row=3+i,column=2)
         #Unit[i].bind("<Enter>", lambda udalost: Save(udalost,Var[i].get(),Value[i].get()))
-        Save(Var[i].get(),Value[i].get())
 
     #inicializace dokoncena
     Init_done = 1
@@ -139,36 +137,24 @@ def PrepocetOsoby(udalost,Pocet1,Pocet1_new,Value):
         Unit_new[i]=OptionMenu(vareni, Var[i], *MyItems)
         Unit_new[i].grid(row=3+i,column=6)
 
-#prevod jednotky
-def Prevod(NewUnit,Var):
-    #cyklus na radky
-    for i in range(PocetRadku):
-        print('converting...')
-        print(Var)
-        c= Var.to(NewUnit)
-        print('A conversion complete')
-        print(c)
-        d=round(c.magnitude,5)
-        print(d)
-        Value[i].delete(0,END)
-        Value[i].insert(END,d)
+#prevod jednotky, vola se pri zmene jednotky
+def Prevod(name,*args):
+    print('probiha prevod...')
+    #do jmena volane promenne mam ulozene cislo radku
+    a= Unit_before[int(name[3])]
+    b= Var[int(name[3])].get()
+    c= a.to(b)
+    d=round(c.magnitude,3)
+    Value[int(name[3])].delete(0,END)
+    Value[int(name[3])].insert(END,d)
 
-#ulozeni jednotky
-def Save(Unit,Value):
-    #cyklus na radky
-    for i in range(PocetRadku):
-        print('Ukladam...')
-        Unit_before[i] = float(Value) * ureg(Unit)
-        print(Unit_before[i])
-
-#zmenila se jednotka
-def ZmenaJednotka(*args):
-    print('probiha zmena jednotky')
-    Prevod(Var[i].get(),Unit_before[i])
-
-#zmenila se hodnota
-def ZmenaHodnota(*args):
-    Save(Var[i].get(),Real_Value[i].get())
+#ulozeni vsech hodnot, zavolam pri zmene hodnoty nektereho policka
+def Save(name,*args):
+    print('saving...')
+    a=Real_Value[int(name[10])].get()
+    b=Var[int(name[10])].get()
+    Unit_before[int(name[10])] = float(a) * ureg(b)
+    print(Unit_before[int(name[10])])
 
 # ------------------------------------------------------------
 # -----------------Hlavni smycka -----------------------------
@@ -177,9 +163,10 @@ def ZmenaHodnota(*args):
 Inicializace()
 
 #obrazky (z nejakeho duvodu nelze v inicializaci)
-obrazek=PhotoImage(file=r"obr\book2_crop.png")
+
+obrazek=PhotoImage(file=r"obr\book2_tiny.png")
 image = Label(image=obrazek)
-image.grid(row=1, column=3,rowspan=9)
+image.grid(row=0, column=3,rowspan=9)
 
 obrazek1=PhotoImage(file=r"obr\arrow_crop.png")
 image1 = Label(image=obrazek1,bg="grey")
